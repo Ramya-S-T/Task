@@ -1,0 +1,37 @@
+<div ng-app="Test">
+    
+	<script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.5.2/angular.min.js"></script>
+	<div ng-controller="Go">
+        ok? {{status}}       
+    </div>    
+</div>
+<script>
+var app = angular.module('Test', []);
+app.controller('Go', ['$scope', '$http', '$q', function($scope, $http, $q) {
+
+    $scope.checkGenerationReport = function(urlReport) {
+        var deferred = $q.defer();
+        $http.get(urlReport, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        }).success(function(data, status, headers, config) {
+            $scope.STATUS = data.state;
+            deferred.resolve($scope.STATUS);
+        }).error(function(data, status, headers, config) {
+            $scope.STATUS = 'ERRO';
+            deferred.reject($scope.STATUS);
+        });
+
+        return deferred.promise;
+    };
+
+    $scope.checkGenerationReport('http://www.google.com').then(function(status) {
+        //success
+        $scope.status = status;
+    }, function(status) {
+        //error
+        $scope.status = status;
+    });
+}]);
+</script>

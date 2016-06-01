@@ -1,0 +1,32 @@
+ <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.5.2/angular.min.js"></script>
+<div ng-app="testapp">
+    <div ng-controller="testCtrlr">
+        <div mdpagination > </div>
+    </div>
+    
+</div>
+<script>
+var MyDirectives = angular.module('testapp', []);
+
+MyDirectives.controller('testCtrlr',['$scope', function($scope){
+    $scope.pages = 'PAGES!'
+}]);
+
+MyDirectives.directive("mdpagination", function(){
+    console.log('DIRECTIVE!');
+    return {
+        template: "<h1>BLAH!</h1>",
+        replace: true,
+        restrict: 'A',
+        scope: false, //default
+        link: function(scope, element, attrs){ 
+            console.log('in linking function');
+            console.dir(scope);
+            console.dir(element);
+            console.dir(attrs);
+            console.dir(scope.pages);
+        }
+    }
+});
+
+</script>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <script src="underscore.js"></script>
+</head>
+<body>
+<br><br><br>
+<div class="col-sm-4"></div>
+<div class="col-sm-4 container">
+  <h2>Form for Mobile and Web</h2>
+  <form role="form">
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" class="form-control" id="email" placeholder="Enter email">
+    </div>
+    <div class="form-group">
+      <label for="pwd">Password:</label>
+      <input type="password" class="form-control" id="password" placeholder="Enter password">
+    </div>
+    <button type="submit" class="btn btn-default" id="login">Submit</button>
+  </form>
+</div>
+
+</body>
+</html>
+
+
+<script>
+$(document).ready(function(){
+$('#login').click(function(){
+
+var users=[{"email":"r@gmail.com","password":"123"},{"email":"a@gmail.com","password":"123"}];
+var email=$("#email").val();
+var password=$("#password").val();
+
+var obj={"email":email,"password":password};
+var res=_.findWhere(users,obj);
+
+//Checking for blank fields
+if( email == '' || password == ''){
+$('input[type="text"],input[type="password"]').css("border","2px solid red");
+$('input[type="text"],input[type="password"]').css("box-shadow","0 0 3px red");
+
+alert("Please fill all fields...!!!!!!");
+$(location).attr('href',"logoffOnJquery.html");
+}else if(res == null){
+//Checking user registered or not
+alert("The email and password you entered don't match");
+$(location).attr('href',"logoffOnJquery.html");
+
+}else if(res != null){
+$(location).attr('href',"success.html");}
+return false;
+});
+
+});
+</script>

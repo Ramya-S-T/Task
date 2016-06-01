@@ -1,0 +1,54 @@
+
+      <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.5.2/angular.min.js"></script>
+	  
+	
+ <div ng-app="myApp" ng-init="getEmp();">
+    <div ng-controller="EmpController">
+        <button ng-click="editEmp(id);">click to edit employee</button>
+		<button ng-click="deleteEmp(id);">click to delete employee</button>
+		<button ng-click="saveEmp(id);">click save employee</button>
+    </div>
+    
+</div>
+<script>
+         var app=angular.module("myApp", []);
+         
+         app.controller("EmpController",['$scope','$http','$location', function($scope,$http,$location) {
+		 $scope.saveEmp = function() {
+		 var employee={"name":"savitha"};		 
+		 console.log("save employee employee");
+        var save=$http.post('http://localhost:3000/api/emp',employee);
+       save.success(function(data) {
+            $scope.data = data;
+			console.log(data);
+        });
+    };
+    
+		 $scope.getEmp = function() {
+		 console.log("getting all employee");
+        $http.get('http://localhost:3000/api/getAllEmp').
+        success(function(data) {
+            $scope.data = data;
+			console.log(data);
+        });
+    };
+	$scope.editEmp = function(id) {
+		 console.log("editing employee");
+        $http.put('http://localhost:3000/api/edit/:emp_id'+id).
+        success(function(data) {
+            $scope.data = data;
+			console.log(data);
+        });
+    };
+	$scope.deleteEmp = function(id) {
+		 console.log("delete employee");
+        $http.delete('http://localhost:3000/api/delete/:emp_id'+id).
+        success(function(data) {
+            $scope.data = data;
+			console.log(data);
+        });
+    };
+    
+         }]);
+      </script>
+      

@@ -1,0 +1,369 @@
+<script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.1.3/angular.min.js"></script>
+
+<div ng-app="myapp">
+    <div ng-controller="UserCtrl">
+        <!-- List users -->
+        <div id="user_list" class="listview_list">
+            <div id="user_row" class="listview_row" ng-repeat="u in users">
+                <div id="user_username" class="listview_column"><span class="listview_mainfield">{{u.email}}</span></div>
+                <div id="user_firstname" class="listview_column">{{u.firstName}}</div>
+                <div id="user_lastname" class="listview_column">{{u.lastName}}</div>
+                <button class="listview_button" ng-click="deleteUser(u.id, $index)">Delete</button>
+                <button class="listview_button" ng-click="showEditScreen(u.id, $index)">Edit</button>                
+            </div>
+            
+            <!-- Add new user button -->
+            <div id="user_new" class="new_user">
+                <button class="add_button" ng-click="showAddScreen()">Add user</button>
+            </div>
+
+            <!-- Show user modification screen (opens when clicking on to the "Add user" or "Edit" button) -->
+            <div id="user_mod" class="user_form" ng-show="userModScreenVisible">
+                <form name="mod_user" novalidate>
+                    <input type="email" name="email" ng-model="user.email" placeholder="E-Mail" ng-disabled="emailFieldDisabled" required email-available/>
+                    <div class="user-help" ng-show="mod_user.email.$dirty && mod_user.email.$invalid">Invalid:
+                        <span ng-show="mod_user.email.$error.required">Please enter your email.</span>
+                        <span ng-show="mod_user.email.$error.email">This is not a valid email.</span>
+                        <span ng-show="mod_user.email.$error.checkingEmail">Checking email...</span>
+                        <span ng-show="mod_user.email.$error.emailAvailable">Email not available</span>
+                    </div>
+                    <br/>
+                    <input name="firstName" ng-model="user.firstName" placeholder="Firstname" required/>
+                    <div class="user-help" ng-show="mod_user.firstName.$dirty && mod_user.firstName.$invalid">Invalid:
+                        <span ng-show="mod_user.firstName.$error.required">Please enter your firstname.</span>
+                    </div>
+                    <br/>
+                    <input name="lastName" ng-model="user.lastName" placeholder="Lastname" required/>
+                    <div class="user-help" ng-show="mod_user.lastName.$dirty && mod_user.lastName.$invalid">Invalid:
+                        <span ng-show="mod_user.lastName.$error.required">Please enter your lastname.</span>
+                    </div>
+                    <br/>
+                    <input type="password" name="password" ng-model="password" placeholder="Password" ng-disabled="passwordFieldDisabled" ng-required="passwordFieldRequired" required/>
+                    <div class="user-help" ng-show="mod_user.password.$dirty && mod_user.password.$invalid">Invalid:
+                        <span ng-show="mod_user.password.$error.required">Please enter a password.</span>
+                    </div>
+                    <br/>
+                    <input type="password" name="passwordConfirm" ng-model="passwordConfirm" placeholder="Confirm Password" ng-disabled="passwordFieldDisabled" ng-required="passwordFieldRequired" required field-equal="password"/>
+                    <div class="user-help" ng-show="mod_user.passwordConfirm.$dirty && mod_user.passwordConfirm.$invalid">Invalid:
+                        <span ng-show="mod_user.passwordConfirm.$error.required">Please enter a password.</span>
+                        <span ng-show="mod_user.passwordConfirm.$error.fieldEqual">Passwords do not match.</span>
+                    </div>
+                    <br/>
+                    <button class="button" ng-click="hideUserModScreen()">Close</button>
+                    <button class="button" ng-click="updateUser()" ng-disabled="mod_user.$invalid" ng-show="updateUserButtonVisible">Update</button>
+                    <button class="button" ng-click="saveUser()" ng-disabled="mod_user.$invalid" ng-show="saveUserButtonVisible">Save</button>
+                </form>
+            </div>            
+        </div>
+    </div>
+</div>
+
+
+<script>
+var $scope;
+var app = angular.module('myapp', ['myapp.directives']);
+
+/*
+* User Controller
+*/
+function UserCtrl($scope) {
+    /*
+    * Create array with 2 users that will be displayed    
+    */
+    $scope.users = [{id:"31546310-8a09-4887-9bca-7a719af0620e", firstName:"John", lastName:"Smith", email:"john@john.com", password:"bla"}, {id:"62637e0b-c7e6-44c7-bd1e-8f6130eb648f", firstName:"Jane", lastName:"Adams", email:"jane@jane.com", password:"bla"}];
+    
+    /*
+    * Set vars to invisible by defaultblabla
+    */
+    // userModScreen is the screen on the right side with form fields
+    $scope.userModScreenVisible = false;
+    // button that will update the user when clicked
+    $scope.updateUserButtonVisible = false;
+    // button that will save a new user when clicked
+    $scope.saveUserButtonVisible = false; 
+    
+    /*
+    * Set vars to disabled by default
+    */
+    // email field will be disabled by default in edit mode
+    $scope.emailFieldDisabled = false;
+    // password field will be disabled by default in edit mode
+    $scope.passwordFieldDisabled = false;
+
+    /*
+    * Set vars to required by default
+    */
+    // set password field to required by default
+    $scope.passwordFieldRequired = true;
+    
+    /*
+    * Show add user screen
+    */
+    $scope.showAddScreen = function() {
+        // initialize an empty user
+        $scope.user = [{id:"", firstName:"", lastName:"", email:"", password:""}];
+        // display save user button
+        $scope.saveUserButtonVisible = true;
+        // display user modification screen on right side 
+        $scope.userModScreenVisible = true;
+    }
+    
+    /*
+    * Show edit user screen
+    */
+    $scope.showEditScreen = function(id, index) {
+        // get user from array
+        $scope.user = $scope.users[index];
+        // set index for user that we are editing
+        $scope.editIndex = index;
+        // set update user button to visible
+        $scope.updateUserButtonVisible = true;
+        // set email field to disabled 
+        // (we don't allow to edit the email address as it has to be unique)
+        $scope.emailFieldDisabled = true;
+        // disable the password fields by default
+        $scope.passwordFieldDisabled = true;
+        // when password fields are disabled they are not required
+        $scope.passwordFieldRequired = false;
+        // display user modification screen on right side
+        $scope.userModScreenVisible = true;
+    }    
+
+    /*
+    * Close add or edit screen
+    */
+    $scope.hideUserModScreen = function() {
+        // set update user button to invisible
+        $scope.updateUserButtonVisible = false;
+        // set save user button to invisible
+        $scope.saveUserButtonVisible = false;
+        // set email field to enabled
+        $scope.emailFieldDisabled = false;
+        // set password field to enabled
+        $scope.passwordFieldDisabled = false;
+        // set form to pristine (untouched) state
+        $scope.mod_user.$setPristine();
+        // close user modification screen on right side
+        $scope.userModScreenVisible = false;
+    }
+
+    /*
+    * Update a user
+    */
+    $scope.updateUser = function() {
+        // update user in the users array
+        angular.extend($scope.users[$scope.editIndex], $scope.user);
+        // set the array index to null
+        $scope.editIndex = null;
+        // set the update user button to invisible
+        $scope.updateUserButtonVisible = false;
+        // close user modification screen on right side
+        $scope.userModScreenVisible = false;
+        // set form to pristine (untouched) state
+        $scope.mod_user.$setPristine();
+    }
+
+    /*
+    * Save a new user
+    */
+    $scope.saveUser = function() {
+        // add new user to array
+        $scope.users.push($scope.user);
+        // set save user button to invisible
+        $scope.saveUserButtonVisible = false;
+        // close user modification screen on right side
+        $scope.userModScreenVisible = false;
+        // set form to pristine (untouched) state
+        $scope.mod_user.$setPristine();
+    }
+
+    /*
+    * Delete a user
+    */
+    $scope.deleteUser = function(id, index) {
+        // delete user from array
+        $scope.users.splice(index, 1);
+        // close user modification screen on right side
+        $scope.userModScreenVisible = false;
+    }    
+}
+
+/*
+* Custom directives
+*/
+angular.module('myapp.directives', []).
+
+    /*
+    * Validate if the email address is available.
+    */
+    directive('emailAvailable', function($http) { // available
+        return {
+            require: 'ngModel',
+            link: function(scope, elem, attr, ctrl) {
+                // push the validator on so it runs last.
+                ctrl.$parsers.push(function(viewValue) {
+                    // set it to true here, otherwise it will not
+                    // clear out when previous validators fail.
+                    ctrl.$setValidity('emailAvailable', true);
+                    if(ctrl.$valid) {
+                        // set it to false here, because if we need to check
+                        // the validity of the email, it's invalid until the
+                        // AJAX responds.
+                        ctrl.$setValidity('checkingEmail', false);
+
+                        // check if email is available or used
+                        if(viewValue !== "" && typeof viewValue !== "undefined") {
+                            ctrl.$setValidity('emailAvailable', true);
+                            ctrl.$setValidity('checkingEmail', true);
+                            /* uncommented as this is only a test
+                            $http.get('/api/user/email/' + viewValue + '/available')
+                                .success(function(data, status, headers, config) {
+                                    ctrl.$setValidity('emailAvailable', true);
+                                    ctrl.$setValidity('checkingEmail', true);
+                                })
+                                .error(function(data, status, headers, config) {
+                                    ctrl.$setValidity('emailAvailable', false);
+                                    ctrl.$setValidity('checkingEmail', true);
+                                });
+                           */
+                        } else {
+                            ctrl.$setValidity('emailAvailable', true);
+                            ctrl.$setValidity('checkingEmail', true);
+                            /* uncommented as this is only a test
+                            ctrl.$setValidity('emailAvailable', false);
+                            ctrl.$setValidity('checkingEmail', true);
+                            */
+                        }
+                    }
+                    return viewValue;
+                });
+            }
+        };
+    }).
+
+    /*
+    * Validate if two fields are equal (such as passwords match for example)
+    */
+    directive('fieldEqual', [function() {
+        return {
+            require: 'ngModel',
+            link: function(scope, elem, attr, ctrl) {
+                ctrl.$parsers.push(function(viewValue) {
+                    ctrl.$setValidity('fieldEqual', true);
+                    if(ctrl.$valid) {
+                        scope.$watch(attr.fieldEqual, function() {
+                            var compareValue = this.last;
+                            if (viewValue !== compareValue) {
+                                ctrl.$setValidity('fieldEqual', false);
+                                return undefined;
+                            } else {
+                                ctrl.$setValidity('fieldEqual', true);
+                                return viewValue;
+                            }
+                        });
+                    }
+                });
+            }
+        };
+    }]);
+</script>
+
+<style>
+/*
+* Displays a list of items as for example a list of users
+*/
+.listview_list {
+}
+
+.listview_row {
+    width: 400px;
+    background-color: #f1f1f1;
+    border-bottom: dotted 1px #ccc;
+}
+
+.listview_row:first-child {
+    border-top: dotted 1px #ccc;
+}
+
+.listview_row:after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+.listview_row a {
+    float:right;
+    padding: 5px;
+    display: block;
+}
+
+.listview_column {
+    float: left;
+    padding: 6px;
+}
+
+.listview_mainfield {
+    color: red;
+}
+
+.listview_button {
+    margin-top: 4px;
+    margin-right: 4px;
+    float: right;
+}
+
+.add_button {
+    margin-top: 4px;
+    margin-right: 4px;
+    float: left;    
+}
+
+/*
+* Form CSS 
+*/
+.user_form {
+    position: absolute;
+    top: 8px;
+    left: 410px;
+    background-color: #f1f1f1;
+    padding: 15px;
+    border: dotted 1px #ccc;
+}
+
+input[type='text'] {
+    margin-bottom: 2px;
+    height: 22px;
+    width: 250px;
+}
+
+input[type='checkbox'] {
+    margin-bottom: 2px;
+}
+
+input.ng-invalid.ng-dirty {
+    border: 2px solid #FA787E;
+    background-color: #FFFF99;
+}
+input.ng-valid.ng-dirty {
+    border: 2px solid #78FA89;
+    background-color: #CCFF99;
+}
+
+.user-help {
+    color: #FA787E;
+    font-size: 12px;
+}
+
+.password_checkbox {
+    font-size: 11px;
+}
+
+.user_password_checkbox_text_disabled {
+    color: #ccc;
+    font-size: 11px;
+}
+
+.new_user {
+    margin-top: 5px;
+}
+</style>
